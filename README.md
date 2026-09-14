@@ -1,8 +1,8 @@
-# pp_language
+# pp-language
 
 Version 2.0.0, based on omp_language v1.07.
 
-pp_language is a fork of [omp_language](https://github.com/KW46/omp_language)
+pp-language is a fork of [omp_language](https://github.com/KW46/omp_language)
 by Kwarde (@KW46), adapted to use PawnPlus. Thanks to Kwarde and everyone who
 contributed to the original library for all their work.
 
@@ -65,9 +65,9 @@ Entry in a table/language file that identifies a single string.
 ### Including the language system
 1. Make sure you're using open.mp, the provided 3.10.11 compiler and that you have the dependencies listed in `dependencies.txt`
 2. Copy all files from `includes/` into your include path. Install the matching PawnPlus include/plugin pair and load the plugin.
-3. Optionally, add `pp_language_colours.inc` to your includes directory (see [Embedded colour names](#embedded-colour-names))
+3. Optionally, add `pp-language-colours.inc` to your includes directory (see [Embedded colour names](#embedded-colour-names))
 4. Make sure `scriptfiles/languages` is added to your server files
-5. Include pp_language: `#include <pp_language>`
+5. Include pp-language: `#include <pp-language>`
 
 That's all!
 <!> Make sure at least one language exist: This language system doesn't support having no languages added and may cause issues. Pointless anyway to include this language system if you're not using any language
@@ -75,7 +75,7 @@ That's all!
 [To index](#how-to-use)
 
 ### Compile options
-**Before including pp_language** you can set several compile options:
+**Before including pp-language** you can set several compile options:
 
 `SQLITE_INVALID_HANDLE`
 Since open.mp doesn't have a definition for this, it's added by this include.
@@ -98,11 +98,11 @@ Default value if not defined: `"en"`
 `DEFAULT_MESSAGES_FILE_NAME`
 Sets the file name without its extension used for the language selection dialog and confirmation message in each language directory.
 Default value if not defined: `"_pp_language"`.
-To keep existing `_omp_language.txt` files, define this before including pp_language:
+To keep existing `_omp_language.txt` files, define this before including pp-language:
 
 ```pawn
 #define DEFAULT_MESSAGES_FILE_NAME "_omp_language"
-#include <pp_language>
+#include <pp-language>
 ```
 
 `LANGUAGE_SQLITE_PERSISTENT_DATA`
@@ -153,8 +153,8 @@ Default value if not defined: `SORT_ASC`
 ### Embedded colour names
 The language files are added in run-time and therefore macros (eg `COL_RED`) can't be used.
 Since it would be very inconvenient to use hexadecimal numbers all the time, this language system allows using colour names.
-There is a default set of language colours, included in file `includes/pp_language_colours.inc`. This creates a constant array called `gLanguageColours`.
-You can simply use these colours, or define the array yourself before including pp_language.
+There is a default set of language colours, included in file `includes/pp-language-colours.inc`. This creates a constant array called `gLanguageColours`.
+You can simply use these colours, or define the array yourself before including pp-language.
 <!> You can use this language system without using this array, though that will throw a compile warning.
 If gLanguageColours exists, all colour names are translated to colour numbers when creating the database.
 
@@ -231,7 +231,7 @@ Hell no. YSI is so bad your house will explode even if you download it.¹
 
 The variadic helpers are provided by [pp-va](https://github.com/itsneufox/pp-va).
 Its formatting APIs include `PP_Format` and `PP_GetArgumentReferences`. 
-Direct argument spreading with `___(n)` is enabled by default. Define `PP_VA_DISABLE_SPREAD` before including pp_language to disable it;
+Direct argument spreading with `___(n)` is enabled by default. Define `PP_VA_DISABLE_SPREAD` before including pp-language to disable it;
 
 ## PawnPlus APIs
 

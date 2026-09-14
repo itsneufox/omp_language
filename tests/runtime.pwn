@@ -1,5 +1,5 @@
 #pragma dynamic 16384
-#include <pp_language>
+#include <pp-language>
 
 new failures;
 new String:retained;

@@ -2,7 +2,7 @@
 
 ## v2.0.0 - 2026/09/14
 
-Based on omp_language v1.07. pp_language now uses its own semantic versioning.
+Based on omp_language v1.07. pp-language now uses its own semantic versioning.
 
 * Features
     * Language_GetString(), Player_Language_GetString() (PawnPlus strings and positional formatting)
@@ -14,7 +14,7 @@ Based on omp_language v1.07. pp_language now uses its own semantic versioning.
     * N/A
 
 * Misc
-    * Rename the fork to pp_language
+    * Rename the fork to pp-language
     * Replace YSI hooks with pp-hooks and standalone y_unique for automatic hook names
     * Use plain open.mp dialogs and pp-va for variadic formatting
     * Update examples and dependency installation instructions

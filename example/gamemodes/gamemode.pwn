@@ -1,5 +1,5 @@
 #pragma dynamic 10000
-#include <pp_language>
+#include <pp-language>
 
 main() {}
 

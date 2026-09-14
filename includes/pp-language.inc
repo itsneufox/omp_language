@@ -1,5 +1,5 @@
 /*
- * pp_language v2.0.0 - PawnPlus localization library.
+ * pp-language v2.0.0 - PawnPlus localization library.
  * Based on omp_language v1.07 by @KW46 (Kwarde).
  * Contributors: @NebulaGB, @itsneufox, @Trysha-rbrn.
  * See LICENSE for the original GPL-3.0 terms.
@@ -10,10 +10,10 @@
 #define _INC_pp_language
 
 #if !defined __PawnBuild
-    #error pp_language requires compiler version 3.10.11
+    #error pp-language requires compiler version 3.10.11
 #endif
 #if __PawnBuild != 11
-    #error pp_language requires compiler version 3.10.11
+    #error pp-language requires compiler version 3.10.11
 #endif
 
 /*-- Includes --*/
@@ -66,7 +66,7 @@
 #endif
 
 #if !defined gLanguageColours
-    #tryinclude <pp_language_colours>
+    #tryinclude <pp-language-colours>
 #endif
 #if !defined gLanguageColours
     #warning gLanguageColours not defined: Colour names used in language files will not work!
@@ -114,7 +114,7 @@
 #endif
 
 #if defined LANGUAGE_PVAR_NAME
-    #error Compiler constant LANGUAGE_PVAR_NAME used by pp_language, please undefine
+    #error Compiler constant LANGUAGE_PVAR_NAME used by pp-language, please undefine
 #endif
 #define LANGUAGE_PVAR_NAME "__pp_language_selectedLanguage"
 
@@ -159,7 +159,7 @@ static bool:Language_ScanLanguages()
     // <!> Function will return true even if no languages exist
     if (!dir_exists("scriptfiles/languages"))
     {
-        Print("[pp_language] ERROR: Language directory doesn't exist!");
+        Print("[pp-language] ERROR: Language directory doesn't exist!");
         return false;
     }
 
@@ -180,12 +180,12 @@ static bool:Language_ScanLanguages()
         new langCode[3], langName[32];
         if (sscanf(dirItem, "p<_>s[3]s[32]", langCode, langName))
         {
-            PrintF("<!>[pp_language]: Invalid directory name '%s' found in 'scriptfiles/languages'!", dirItem);
+            PrintF("<!>[pp-language]: Invalid directory name '%s' found in 'scriptfiles/languages'!", dirItem);
             continue;
         }
         if (languagesAdded >= LANGUAGES_MAX)
         {
-            PrintF("<!>[pp_language]: Cannot add language %s(%s): Maximum languages (%d) reached!", langName, langCode, LANGUAGES_MAX);
+            PrintF("<!>[pp-language]: Cannot add language %s(%s): Maximum languages (%d) reached!", langName, langCode, LANGUAGES_MAX);
             continue; // Print a warning for every language that's not added
         }
 
@@ -277,7 +277,7 @@ static void:Language_AddDataFromFile(const languageId, const string:file[], cons
         if (sscanf(languageFileContent, sscanfSpecifier, identifier, content)) continue;
 
         new len = strlen(content);
-        if (len > LANGUAGE_MAX_CONTENT_LENGTH) PrintF("<!>[pp_language] Content length of `%s`:`%s` exceeds LANGUAGE_MAX_CONTENT_LENGTH " #LANGUAGE_MAX_CONTENT_LENGTH, tableName, identifier);
+        if (len > LANGUAGE_MAX_CONTENT_LENGTH) PrintF("<!>[pp-language] Content length of `%s`:`%s` exceeds LANGUAGE_MAX_CONTENT_LENGTH " #LANGUAGE_MAX_CONTENT_LENGTH, tableName, identifier);
 
         // Strip "\n" (LF) or "\r\n" (CRLF) at end of line
         if (languageFileCurrentLine < languageFileLines)
@@ -303,7 +303,7 @@ static void:Language_AddDataFromFile(const languageId, const string:file[], cons
                         if (loopCount ==
                             1)
                             PrintF(
-                                "<!>[pp_language] Cannot replace colour '%s' in `%s`:`%s` since that would exceed LANGUAGE_MAX_CONTENT_LENGTH " #LANGUAGE_MAX_CONTENT_LENGTH,
+                                "<!>[pp-language] Cannot replace colour '%s' in `%s`:`%s` since that would exceed LANGUAGE_MAX_CONTENT_LENGTH " #LANGUAGE_MAX_CONTENT_LENGTH,
                                 gLanguageColours[i][0],
                                 tableName,
                                 identifier
@@ -367,7 +367,7 @@ forward __OnPlayerChangeLanguage(playerid);
 
 public __OnPlayerChangeLanguage(playerid)
 {
-    // Called by Player_SetLanguage to make sure all scripts using pp_language update a player's language
+    // Called by Player_SetLanguage to make sure all scripts using pp-language update a player's language
     GetPVarString(playerid, LANGUAGE_PVAR_NAME, spLanguage[playerid]);
 }
 
@@ -518,7 +518,7 @@ public __LanguageDB_BuildSingleTable(const string:file[], const string:subDir[],
             if (!fexist(fullPath))
             {
                 PrintF(
-                    "<!>[pp_language] Cannot (re-)build table `%s` for language `%s (%s)`:\n\tFile `%s` does not exist",
+                    "<!>[pp-language] Cannot (re-)build table `%s` for language `%s (%s)`:\n\tFile `%s` does not exist",
                     tableName,
                     sLanguages[i][E_LANG_NAME],
                     sLanguages[i][E_LANG_CODE],
@@ -535,7 +535,7 @@ public __LanguageDB_BuildSingleTable(const string:file[], const string:subDir[],
     }
 
 #if !defined LANGUAGE_NO_BUILD_MESSAGE
-    if (buildCount == languageCount) PrintF("[pp_language] Successfully completed (re-)building table `%s`", tableName);
+    if (buildCount == languageCount) PrintF("[pp-language] Successfully completed (re-)building table `%s`", tableName);
 #endif
 }
 
@@ -558,7 +558,7 @@ stock void:LanguageDB_BuildSingleTable(const string:file[], const string:subDir[
         }
     }
 #if !defined LANGUAGE_NO_BUILD_MESSAGE
-    PrintF("[pp_language] (Re-)building table `%s`", tableName);
+    PrintF("[pp-language] (Re-)building table `%s`", tableName);
 #endif
     CallRemoteFunction("__LanguageDB_BuildSingleTable", "sss", file, subDir, tableName);
 }
@@ -578,7 +578,7 @@ stock String:Language_Template(const languageCode[], const table[], const identi
         DBResult:result = DB_ExecuteQuery(sLanguageDBHandle, "SELECT content FROM `%s` WHERE ident = '%q' AND lang = %d;", table, identifier, Language_GetIDFromData(languageCode));
 
     // A locale may be intentionally incomplete while it is being translated.  In
-    // that case, use the server's default language rather than exposing pp_language's
+    // that case, use the server's default language rather than exposing pp-language's
     // diagnostic marker to the player.  Keep the marker when the identifier is also
     // absent from the default locale so genuinely invalid lookups remain visible.
     if (!DB_GetRowCount(result) && strcmp(languageCode, sDefaultLanguage, true))
@@ -623,7 +623,7 @@ stock String:Language_GetString(const languageCode[], const table[], const ident
     list_delete(arguments);
     if (error != amx_err_none)
     {
-        printf("[pp_language] Formatting failed for %s:%s (error %d)", table, identifier, _:error);
+        printf("[pp-language] Formatting failed for %s:%s (error %d)", table, identifier, _:error);
         return template;
     }
     str_delete(template);
@@ -639,7 +639,7 @@ stock String:Player_Language_GetString(playerid, const table[], const identifier
     list_delete(arguments);
     if (error != amx_err_none)
     {
-        printf("[pp_language] Formatting failed for %s:%s (error %d)", table, identifier, _:error);
+        printf("[pp-language] Formatting failed for %s:%s (error %d)", table, identifier, _:error);
         return template;
     }
     str_delete(template);
@@ -658,7 +658,7 @@ stock String:Language_FormatMap(const languageCode[], const table[], const ident
     pp_format_env_pop();
     if (error != amx_err_none)
     {
-        printf("[pp_language] Named formatting failed for %s:%s: %s", table, identifier, format_error_text);
+        printf("[pp-language] Named formatting failed for %s:%s: %s", table, identifier, format_error_text);
         return template;
     }
     str_delete(template);

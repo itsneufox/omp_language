@@ -1,4 +1,4 @@
-name: Release pp_language
+name: Release pp-language
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-files
-          package="pp_language-${TAG_NAME}"
+          package="pp-language-${TAG_NAME}"
           files=(includes scriptfiles example README.md CHANGELOG.md LICENSE dependencies.txt)
           git archive --format=zip --prefix="${package}/" \
             --output="release-files/${package}.zip" HEAD -- "${files[@]}"
@@ -58,7 +58,7 @@ jobs:
           release_args=(
             "$TAG_NAME"
             --verify-tag
-            --title "pp_language ${TAG_NAME}"
+            --title "pp-language ${TAG_NAME}"
             --generate-notes
           )
           if [[ "$TAG_NAME" == *-* ]]; then
