@@ -896,6 +896,23 @@ Callback that is called after a player changed their language from the dialog
 ---
 [To main index](#index)
 
+## Releases
+
+Push a version tag on a commit containing the release workflow to publish a GitHub release:
+
+```bash
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+Use `vMAJOR.MINOR.PATCH` for stable releases, or append `-alpha.N`, `-beta.N`
+or `-rc.N` for prereleases (for example, `v2.1.0-beta.1`).
+The tag supplies the release version; update version references and the changelog
+before tagging. The workflow publishes ZIP and tar.gz archives containing the
+includes, language files, examples, documentation and dependency list, plus
+`SHA256SUMS` and automatically generated release notes. Dependencies must be
+installed separately.
+
 ## Tests
 
 ```bash
