@@ -95,6 +95,16 @@ Defines the default server language.
 <!> Ultimately the default language is stored to a variable. If this given language does not exist, the default language is changed to the first available language! (language at index 0)
 Default value if not defined: `"en"`
 
+`DEFAULT_MESSAGES_FILE_NAME`
+Sets the file name without its extension used for the language selection dialog and confirmation message in each language directory.
+Default value if not defined: `"_pp_language"`.
+To keep existing `_omp_language.txt` files, define this before including pp_language:
+
+```pawn
+#define DEFAULT_MESSAGES_FILE_NAME "_omp_language"
+#include <pp_language>
+```
+
 `LANGUAGE_SQLITE_PERSISTENT_DATA`
 Define this to create an on-disk database file.
 <!> Only use this to investigate the language database (since there is no sqlite shell)

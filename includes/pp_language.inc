@@ -90,6 +90,10 @@
     #define LANGUAGE_DEFAULT "en"
 #endif
 
+#if !defined DEFAULT_MESSAGES_FILE_NAME
+    #define DEFAULT_MESSAGES_FILE_NAME "_pp_language"
+#endif
+
 #if defined LANGUAGE_SQLITE_PERSISTENT_DATA
     #undef LANGUAGE_SQLITE_PERSISTENT_DATA
     #define LANGUAGE_SQLITE_PERSISTENT_DATA (1)
@@ -982,10 +986,10 @@ stock void:Player_SelectLanguage(const playerid)
             playerid,
             DIALOG_SELECT_LANGUAGE,
             DIALOG_STYLE_LIST,
-            Player_Language_Get(playerid, "_pp_language", "DIALOG_TITLE"),
+            Player_Language_Get(playerid, DEFAULT_MESSAGES_FILE_NAME, "DIALOG_TITLE"),
             dialogStr,
-            Player_Language_Get(playerid, "_pp_language", "DIALOG_BUTTON_SELECT"),
-            Player_Language_Get(playerid, "_pp_language", "DIALOG_BUTTON_CANCEL")
+            Player_Language_Get(playerid, DEFAULT_MESSAGES_FILE_NAME, "DIALOG_BUTTON_SELECT"),
+            Player_Language_Get(playerid, DEFAULT_MESSAGES_FILE_NAME, "DIALOG_BUTTON_CANCEL")
         );
     }
     else
@@ -1037,7 +1041,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             new languageCode[3], languageName[32];
             Language_GetDataFromID(listitem, languageCode, languageName);
             Player_SetLanguage(playerid, languageCode);
-            SendClientLanguageMessage(playerid, -1, "_pp_language", "MSG_SELECTED_LANGUAGE", languageName);
+            SendClientLanguageMessage(playerid, -1, DEFAULT_MESSAGES_FILE_NAME, "MSG_SELECTED_LANGUAGE", languageName);
         }
         CallRemoteFunction("OnPlayerSelectLanguage", "dd", playerid, response);
         return 1;
