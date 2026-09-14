@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.0.0 - 2026/09/14
+
+Based on omp_language v1.07. pp_language now uses its own semantic versioning.
+
+* Features
+    * Language_GetString(), Player_Language_GetString() (PawnPlus strings and positional formatting)
+    * Language_FormatMap() (named values from a PawnPlus map)
+    * Language_Template(), Language_ClearCache(), Language_CacheSize()
+    * Cache language templates; clear cache when rebuilding and clean up on script exit
+
+* Fixes
+    * N/A
+
+* Misc
+    * Rename the fork to pp_language
+    * Replace YSI hooks with pp-hooks and standalone y_unique for automatic hook names
+    * Use plain open.mp dialogs and pp-va for variadic formatting
+    * Update examples and dependency installation instructions
+
 ## v1.07 - 2026/08/03
 * Features
     * LanguageDB_BuildSingleTable() #36

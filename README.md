@@ -1,5 +1,16 @@
-# omp_language
-Yet another multiple languages system.  
+# pp_language
+
+Version 2.0.0, based on omp_language v1.07.
+
+pp_language is a fork of [omp_language](https://github.com/KW46/omp_language)
+by Kwarde (@KW46), adapted to use PawnPlus. Thanks to Kwarde and everyone who
+contributed to the original library for all their work.
+
+I maintain this fork separately as @itsneufox, so the PawnPlus changes here
+aren't an official release of omp_language. The original credits and GPL-3.0
+license still apply.
+
+Yet another multiple languages system.
 This language system is designed for open.mp - Most of it could be made compatible with SA-MP, except using in-memory SQLite database (unless if there's a plugin I don't know about), but highly discouraged since that would be very slow.
 
 ## Index
@@ -7,6 +18,7 @@ This language system is designed for open.mp - Most of it could be made compatib
 * [Semantics](#semantics)
 * [How to use](#how-to-use)
 * [Should I use YSI?](#should-i-use-ysi)
+* [PawnPlus APIs](#pawnplus-apis)
 * [Functions](#functions-and-callbacks)
 
 ## Features
@@ -14,28 +26,29 @@ This language system is designed for open.mp - Most of it could be made compatib
 * Use embedded colour **names** in language files (eg. `{YELLOW}[NOTICE] {WHITE}Hello world!`)
 * Languages can be added/removed/modified without restarting the server
 * Uses multiple files - No huge single file please
-* Works best with YSI, but works without it (biggest drawback: no variable arguments if not using YSI)
+* PawnPlus argument forwarding, dynamic strings, named maps and cached template lookup
+* pp-hooks lifecycle and plain open.mp dialogs; no optional framework code paths
 
 [To main index](#index)
 
 ## Semantics
-`Language directory`  
+`Language directory`
 A directory inside `scriptfiles/languages`, named as `languageCode_languageName`, that holds all language files of that language.
 
-`Language code`  
+`Language code`
 A two-letter code of a language. See [ISO 639, Set 1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)
 
-`Language name`  
+`Language name`
 The full name of a language
 
-`Language file`  
+`Language file`
 A single file inside a language directory, or language sub-directory
 
-`Table`  
-Refers to a single language file from runtime perspective.  
+`Table`
+Refers to a single language file from runtime perspective.
 Function descriptions refer to `table` because data is fetched from an SQLite database (which uses tables), and not directly from the files.
 
-`Identifier`  
+`Identifier`
 Entry in a table/language file that identifies a single string.
 
 [To main index](#index)
@@ -51,52 +64,51 @@ Entry in a table/language file that identifies a single string.
 
 ### Including the language system
 1. Make sure you're using open.mp, the provided 3.10.11 compiler and that you have the dependencies listed in `dependencies.txt`
-2. Make sure `omp_language.inc` is in your includes directory
-3. Optionally, add `omp_language_colours.inc` to your includes directory (see [Embedded colour names](#embedded-colour-names))
+2. Copy all files from `includes/` into your include path. Install the matching PawnPlus include/plugin pair and load the plugin.
+3. Optionally, add `pp_language_colours.inc` to your includes directory (see [Embedded colour names](#embedded-colour-names))
 4. Make sure `scriptfiles/languages` is added to your server files
-5. Include omp_language: `#include <omp_language>`
+5. Include pp_language: `#include <pp_language>`
 
-That's all! 
+That's all!
 <!> Make sure at least one language exist: This language system doesn't support having no languages added and may cause issues. Pointless anyway to include this language system if you're not using any language
 
 [To index](#how-to-use)
 
 ### Compile options
-**Before including omp_language** you can set several compile options:
+**Before including pp_language** you can set several compile options:
 
-`SQLITE_INVALID_HANDLE`  
-Since open.mp doesn't have a definition for this, it's added by this include.  
+`SQLITE_INVALID_HANDLE`
+Since open.mp doesn't have a definition for this, it's added by this include.
 Default value if not defined: `(DB:0)`
 
-`LANGUAGE_MAX_CONTENT_LENGTH`  
-Defines the maximum allowed length of language strings.  
-This sets array sizes of retrieved language strings and the size of the VARCHAR column in the language tables.  
+`LANGUAGE_MAX_CONTENT_LENGTH`
+Defines the maximum allowed length of language strings.
+This sets array sizes of retrieved language strings and the size of the VARCHAR column in the language tables.
 Default value if not defined: `(1024)`
 
-`LANGUAGES_MAX`  
-Defines the maximum amount of languages that can be added.  
+`LANGUAGES_MAX`
+Defines the maximum amount of languages that can be added.
 Default value if not defined: `(4)`
 
-`LANGUAGE_DEFAULT`  
-Defines the default server language.  
-<!> Ultimately the default language is stored to a variable. If this given language does not exist, the default language is changed to the first available language! (language at index 0)  
+`LANGUAGE_DEFAULT`
+Defines the default server language.
+<!> Ultimately the default language is stored to a variable. If this given language does not exist, the default language is changed to the first available language! (language at index 0)
 Default value if not defined: `"en"`
 
-`LANGUAGE_SQLITE_PERSISTENT_DATA`  
-Define this to create an on-disk database file.  
-<!> Only use this to investigate the language database (since there is no sqlite shell)  
-<!> **SIGNIFICANTLY** slower than using in-memory database. Do **NOT** use this in production!  
+`LANGUAGE_SQLITE_PERSISTENT_DATA`
+Define this to create an on-disk database file.
+<!> Only use this to investigate the language database (since there is no sqlite shell)
+<!> **SIGNIFICANTLY** slower than using in-memory database. Do **NOT** use this in production!
 
-`LANGUAGE_SQLITE_PERSISTENT_FILE`  
-If `LANGUAGE_SQLITE_PERSISTENT_DATA` is defined, this definition is the name of the created language database.  
+`LANGUAGE_SQLITE_PERSISTENT_FILE`
+If `LANGUAGE_SQLITE_PERSISTENT_DATA` is defined, this definition is the name of the created language database.
 Default value if not defined: `"languages.db"`
 
-`DIALOG_SELECT_LANGUAGE`  
-If YSI is not used (or at least if y_dialog and y_inline are not used), the default `ShowPlayerDialog()` and `OnDialogResponse()` are used  (instead of `Dialog_ShowCallBack()` and an inline on dialog response callback).  
-Since those require a dialog ID, this sets that dialog ID. Only effective if y_dialog or y_inline is not included.  
+`DIALOG_SELECT_LANGUAGE`
+Sets the dialog ID used by `ShowPlayerDialog()` and its response callback.
 Default value if not defined: `(1)` for gamemodes, `(2)` for filterscripts (`FILTERSCRIPT` must be defined)
 
-`LANGUAGE_NO_BUILD_MESSAGE`  
+`LANGUAGE_NO_BUILD_MESSAGE`
 By default, when the language database is built some messages are printed:
 ```
 [Info] ===== Building language database =====
@@ -108,58 +120,42 @@ By default, when the language database is built some messages are printed:
 [Info] >> Adding data for language "Nederlands"...
 [Info] ===== Language database built =====
 ```
-If you don't want that, simply define LANGUAGE_NO_BUILD_MESSAGE  
+If you don't want that, simply define LANGUAGE_NO_BUILD_MESSAGE
 
-`LANGUAGE_NO_YSI`  
-Define this to prevent inclusion of any YSI include.
+`LANGUAGE_SORT_LANGUAGES`
+readdir() does not guarantee ordering items. Those who want their languages ordered can define LANGUAGE_SORT_LANGUAGES.
+When defined, you'll also have to define either LANGUAGE_SORT_BY_NAME **or** LANGUAGE_SORT_BY_CODE.
+This requires md-sort to be included (must be in either `(include_path)/md-sort.inc` or `(include_path)/md-sort/md-sort.inc`).
+Install md-sort separately if you enable sorting.
 
-`LANGUAGE_NO_YSI_HOOKS`  
-Define this to prevent inclusion of y_hooks.
+`LANGUAGE_SORT_BY_NAME`
+Define this to sort languages by language name when sorting languages.
 
-`LANGUAGE_NO_YSI_VA`  
-Define this to prevent inclusion of y_va.
+`LANGUAGE_SORT_BY_CODE`
+Define this to sort languages by language code when sorting languages.
 
-`LANGUAGE_NO_YSI_FOREACH`  
-Define this to prevent inclusion of y_foreach.
-
-`LANGUAGE_NO_YSI_DIALOG`  
-Define this to prevent inclusion of y_dialog and y_inline.  
-If not defined, omp_language will attempt to include both y_dialog and y_inline.
-
-`LANGUAGE_SORT_LANGUAGES`  
-readdir() does not guarantee ordering items. Those who want their languages ordered can define LANGUAGE_SORT_LANGUAGES.  
-When defined, you'll also have to define either LANGUAGE_SORT_BY_NAME **or** LANGUAGE_SORT_BY_CODE.  
-This requires md-sort to be included (must be in either `(include_path)/md-sort.inc` or `(include_path)/md-sort/md-sort.inc`).  
-Note that YSI provides md-sort already.
-
-`LANGUAGE_SORT_BY_NAME`  
-Define this to sort languages by language name when sorting languages.  
-
-`LANGUAGE_SORT_BY_CODE`  
-Define this to sort languages by language code when sorting languages.  
-
-`LANGUAGE_SORT_METHOD`  
-Optional. Define this with either `SORT_ASC` or `SORT_DESC` to order languages ascending or descending.  
+`LANGUAGE_SORT_METHOD`
+Optional. Define this with either `SORT_ASC` or `SORT_DESC` to order languages ascending or descending.
 Default value if not defined: `SORT_ASC`
 
 [To index](#how-to-use)
 
 ### Embedded colour names
-The language files are added in run-time and therefore macros (eg `COL_RED`) can't be used.  
-Since it would be very inconvenient to use hexadecimal numbers all the time, this language system allows using colour names.  
-There is a default set of language colours, included in file `includes/omp_language_colours.inc`. This creates a constant array called `gLanguageColours`.  
-You can simply use these colours, or define the array yourself before including omp_language.  
+The language files are added in run-time and therefore macros (eg `COL_RED`) can't be used.
+Since it would be very inconvenient to use hexadecimal numbers all the time, this language system allows using colour names.
+There is a default set of language colours, included in file `includes/pp_language_colours.inc`. This creates a constant array called `gLanguageColours`.
+You can simply use these colours, or define the array yourself before including pp_language.
 <!> You can use this language system without using this array, though that will throw a compile warning.
 If gLanguageColours exists, all colour names are translated to colour numbers when creating the database.
 
 [To index](#how-to-use)
 
 ### Adding language data
-First of all, to add a language, create a directory named `languageCode_languageName` (eg `en_English`) inside `scriptfiles/languages`.  
-Language name is preferably in its own language (so `nl_Nederlands` and `de_Deutsch`, not `nl_Dutch` and `de_German`).  
+First of all, to add a language, create a directory named `languageCode_languageName` (eg `en_English`) inside `scriptfiles/languages`.
+Language name is preferably in its own language (so `nl_Nederlands` and `de_Deutsch`, not `nl_Dutch` and `de_German`).
 
-Inside a language directory, you can create text files (.txt) or directories.  
-When calling a language, you can get content from those files using `fileName` or `directoryName-fileName`.  
+Inside a language directory, you can create text files (.txt) or directories.
+When calling a language, you can get content from those files using `fileName` or `directoryName-fileName`.
 Take this directory tree:
 ```
 scriptfiles/
@@ -170,10 +166,10 @@ scriptfiles/
 │  │  │  ├─ player.txt
 │  │  ├─ global.txt
 ```
-To retrieve a string from `global.txt` you would use `"global"`. To retrieve one from `admin.txt` inside the `command` directory, you would use `"command-admin"`.  
+To retrieve a string from `global.txt` you would use `"global"`. To retrieve one from `admin.txt` inside the `command` directory, you would use `"command-admin"`.
 <!> Only one sub-directory is supported, creating another directory inside a sub-directory (in this case, `command`) will not work: Those files will not be added.
 
-To add strings to a language file, simply create an identifier, and then the string attached to that identifier. Use a space (or preferably one or more tabs) to separate those two.  
+To add strings to a language file, simply create an identifier, and then the string attached to that identifier. Use a space (or preferably one or more tabs) to separate those two.
 <!> Empty lines and lines starting with `#` are ignored. As are invalid lines (single words)
 For example:
 ```
@@ -186,7 +182,7 @@ HELLO_WORLD         Hello {GREEN}world!
 _foo BAR
 $myIdentifier0 This is my ugly identifier!
 
-# Even this is valid: 
+# Even this is valid:
 Hello world!
 Lorem ipsum dolor sit amet
 
@@ -194,15 +190,15 @@ Lorem ipsum dolor sit amet
 TEST
 ```
 
-**NOTE**: Make sure that all language directories have the same sub directories and files, and the same identifiers!  
+**NOTE**: Make sure that all language directories have the same sub directories and files, and the same identifiers!
 **NOTE 2**: Since version 1.03, any file extension (or none) is valid. But `.txt` is still preferred and recommended.
 
 [To index](#how-to-use)
 
 ### Fetching language data
-I'll keep this short, since all available functions are described below.  
-To fetch data from the database, use `Language_Get()` or `Player_Language_Get()`  
-To set/get language of a player, use `Player_SelectLanguage()` or `Player_SetLanguage()` and `Player_GetLanguage()`  
+I'll keep this short, since all available functions are described below.
+To fetch data from the database, use `Language_Get()` or `Player_Language_Get()`
+To set/get language of a player, use `Player_SelectLanguage()` or `Player_SetLanguage()` and `Player_GetLanguage()`
 To get amount of available languages and their language codes and names, use `Language_Count()` and `Language_GetIDFromData()`. For example, to print all available languages to the server log:
 ```c
 for (new i = 0, j = Language_Count(); i < j; i++)
@@ -215,14 +211,78 @@ for (new i = 0, j = Language_Count(); i < j; i++)
 
 For some more examples, see the example directory in this repository.
 
-[To index](#how-to-use)  
+[To index](#how-to-use)
 ---
 ## Should I use YSI?
-Yes.  
-1. Even though support for not using YSI is added, it wasn't tested thoroughly and may not be stable
-2. Using YSI makes life much easier thanks to variable arguments, which is a standard in open.mp anyway
 
-[To main index](#index)
+Hell no. YSI is so bad your house will explode even if you download it.¹
+
+¹ A joke. This library uses PawnPlus and standalone y_unique; the full YSI framework is incompatible!
+
+The variadic helpers are provided by [pp-va](https://github.com/itsneufox/pp-va).
+Install `includes/pp-va.inc` from that repository into your compiler include path. Its APIs are `PP_Format` and `PP_GetArgumentReferences`.
+
+## PawnPlus APIs
+
+The existing array-returning API remains compatible and uses open.mp formatting.
+`Language_GetString` and `Player_Language_GetString` return PawnPlus `String:` values
+and use PawnPlus formatting instead: positional arguments, `%S`, variants, custom
+formatters and explicit locale directives are available. See
+[PawnPlus formatting](https://github.com/IS4Code/PawnPlus/wiki/String-formatting).
+
+```pawn
+new String:name = str_new("Alice");
+new String:text = Language_GetString("en", "global", "WELCOME", name, 42);
+// Translation: WELCOME {0:S} has {1:d} points.
+new output[144];
+str_get(text, output);
+SendClientMessage(playerid, -1, "%s", output);
+str_delete(text);
+str_delete(name);
+```
+
+To pass a dynamic string to an ordinary open.mp native, copy it to an array:
+
+```pawn
+new output[144];
+str_get(text, output);
+SendClientMessage(playerid, -1, "%s", output);
+```
+
+`Language_Template(language, table, identifier)` returns the raw template with
+percent placeholders preserved. Each returned string is independent of the cache.
+Dynamic output can exceed `LANGUAGE_MAX_CONTENT_LENGTH`; source entries and legacy
+array results still use that configured limit. Missing translations fall back to
+the default language, then to the diagnostic `[language]table:identifier` marker.
+
+`Language_FormatMap(language, table, identifier, Map:values)` accepts a caller-owned
+map. Use explicit environment access in translations to avoid collisions with Pawn
+symbols: `TOTAL Total: {$env["amount"]:d}`.
+
+```pawn
+new Map:values = map_new();
+map_str_add(values, "amount", 42);
+new String:text = Language_FormatMap("en", "global", "TOTAL", values);
+str_delete(text);
+map_delete(values);
+```
+
+Templates using PawnPlus expression syntax are trusted code. Formatting errors
+return the raw template and log a diagnostic; the named environment is restored.
+Locale formatting is opt-in through PawnPlus directives and installed locales;
+a two-letter language selection does not change the process locale.
+
+Returned strings use PawnPlus temporary ownership. Delete after use, or use
+`str_acquire` / `str_release` to retain them across callbacks. Maps remain owned by
+the caller. The template cache owns copies, is invalidated on full and single-table
+rebuilds, and is released on script exit. `Language_ClearCache()` and
+`Language_CacheSize()` provide explicit control and inspection.
+
+Install [AGraber/pawn-plus-hooks](https://github.com/AGraber/pawn-plus-hooks)
+and [AGraber/y_unique](https://github.com/AGraber/y_unique) as external dependencies.
+They are not bundled with this library. pp-hooks includes standalone y_unique
+internally to generate unique hook names; application modules do not include
+y_unique directly. Hook return zero continues the chain; a nonzero return stops it.
 
 ## Functions
 ### Functions and callbacks
@@ -256,19 +316,19 @@ Yes.
 
 ---
 #### Language_Count
-`Language_Count()`  
+`Language_Count()`
 Returns the amount of available languages
 
-**Parameters**  
+**Parameters**
 None
 
-**Returns**  
+**Returns**
 (int) Amount of available languages
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Language_GetDataFromID()](#language_getdatafromid)
 * [Language_GetIDFromData()](#language_getidfromdata)
 
@@ -276,44 +336,44 @@ None
 
 ---
 #### Language_Default
-`string:Language_Default()`  
-Retrieves server's default language  
+`string:Language_Default()`
+Retrieves server's default language
 
-**Parameters**  
-None  
+**Parameters**
+None
 
-**Returns**  
-(string) Default language of the server.  
+**Returns**
+(string) Default language of the server.
 
-**Notes**  
-`LANGUAGE_DEFAULT` may not be the actual default language if that language doesn't exist.  
-When that happens, default language becomes the first available language.  
-This function returns that language.  
+**Notes**
+`LANGUAGE_DEFAULT` may not be the actual default language if that language doesn't exist.
+When that happens, default language becomes the first available language.
+This function returns that language.
 
-**Related functions/callbacks**  
-None  
+**Related functions/callbacks**
+None
 
 [To index](#functions-and-callbacks)
 
 ---
 #### Language_GetDataFromID
-`bool:Language_GetDataFromID(const languageId, string:languageCode[], string:languageName[], const lenLanguageCode = sizeof(languageCode), const lenLanguageName = sizeof(languageName))`  
+`bool:Language_GetDataFromID(const languageId, string:languageCode[], string:languageName[], const lenLanguageCode = sizeof(languageCode), const lenLanguageName = sizeof(languageName))`
 Retrieves language code and language name from given language ID
 
-**Parameters**  
-`const languageId`: Language ID to get data from  
-`string:languageCode[]`: (reference) Array to store language code in  
-`string:languageName[]`: (reference) Array to store language name in  
-`const lenLanguageCode`: (optional) Size of array languageCode[]  
+**Parameters**
+`const languageId`: Language ID to get data from
+`string:languageCode[]`: (reference) Array to store language code in
+`string:languageName[]`: (reference) Array to store language name in
+`const lenLanguageCode`: (optional) Size of array languageCode[]
 `const lenLanguageName`: (optional) Size of array languageName[]
 
-**Returns**  
+**Returns**
 (bool) **true**: Language exists, data retrieved. **false**: Given language does not exist
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Language_Count()](#language_count)
 * [Language_GetIDFromData()](#language_getidfromdata)
 
@@ -321,20 +381,20 @@ None
 
 ---
 #### Language_GetIDFromData
-`Language_GetIDFromData(const string:search[])`  
+`Language_GetIDFromData(const string:search[])`
 Gets the language ID by looking up language code or language name.
 
-**Parameters**  
+**Parameters**
 `const string:search[]`: Language to get the ID of, using language code or language name.
 
-**Returns**  
+**Returns**
 (int) Language ID, or LANGUAGE_INVALID_ID if given language does not exist
 
-**Notes**  
-<!> `search[]` must be the full language code or name  
+**Notes**
+<!> `search[]` must be the full language code or name
 Case insensitive
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Language_Count()](#language_count)
 * [Language_GetDataFromID()](#language_getdatafromid)
 * [Language_Exists()](#language_exists)
@@ -343,154 +403,154 @@ Case insensitive
 
 ---
 #### Language_Exists
-`bool:Language_Exists(const string:search[])`  
+`bool:Language_Exists(const string:search[])`
 Checks if given language exists
 
-**Parameters**  
+**Parameters**
 `const string:search[]`: Language to check, using language code or language name.
 
-**Returns**  
+**Returns**
 (bool) **true**: Language exists. **false**: Language does not exist
 
-**Notes**  
-<!> `search[]` must be the full language code or name  
+**Notes**
+<!> `search[]` must be the full language code or name
 Case insensitive
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Language_GetIDFromData()](#language_getidfromdata)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### LanguageDB_Build
-`bool:LanguageDB_Build()`  
-Builds or rebuilds the entire language database for the current script.  
+`bool:LanguageDB_Build()`
+Builds or rebuilds the entire language database for the current script.
 Automatically used on script initialization. Can be used to rebuild the language database during runtime (in an admin command), useful if languages were modified.
 
-**Parameters**  
+**Parameters**
 None
 
-**Returns**  
+**Returns**
 (bool) **true**: Language database created. **false**: Directory "scriptfiles/languages" does not exist
 
-**Notes**  
-1: <!> Returns true if no languages were added (which happens if directory "scriptfiles/languages" is empty or doesn't have valid language directory names)  
-2: When running multiple scripts (ie gamemode, and one or more filterscripts): Using this function only re-creates the database for the script it's used in!  
-So for example, if you use this function in your gamemode, the database of the filterscript(s) will not be updated.  
+**Notes**
+1: <!> Returns true if no languages were added (which happens if directory "scriptfiles/languages" is empty or doesn't have valid language directory names)
+2: When running multiple scripts (ie gamemode, and one or more filterscripts): Using this function only re-creates the database for the script it's used in!
+So for example, if you use this function in your gamemode, the database of the filterscript(s) will not be updated.
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [LanguageDB_BuildSingleTable()](#languagedb_buildsingletable)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### LanguageDB_BuildSingleTable
-`void:LanguageDB_BuildSingleTable(const string:file[], const string:subDir[] = "")`  
-(Re-)builds a single table for all running scripts.  
+`void:LanguageDB_BuildSingleTable(const string:file[], const string:subDir[] = "")`
+(Re-)builds a single table for all running scripts.
 
-**Parameters**  
-`const string:file[]`: Full filename to reload  
+**Parameters**
+`const string:file[]`: Full filename to reload
 `const string:subDir[]`: (optional) Sub-directory where the file is located
 
-**Returns**  
+**Returns**
 (nothing)
 
-**Notes**  
-1: Only works for existing languages. If languages are added/removed/modified, use `LanguageDB_Build()` instead  
-2: If `LANGUAGE_NO_BUILD_MESSAGE` is not defined, it will print messages for each script (where said constant is not defined)  
-3: Useful if only one or just a few language files were modified. This is faster than reloading the entire database.  
-It does not matter if it is called from the gamemode or a filterscript.  
-So you could create an admin command that calls this function, or  `OnRconCommand()` (so you could reload it without having to go in-game, assuming (remote) RCON is enabled or you have console access).  
+**Notes**
+1: Only works for existing languages. If languages are added/removed/modified, use `LanguageDB_Build()` instead
+2: If `LANGUAGE_NO_BUILD_MESSAGE` is not defined, it will print messages for each script (where said constant is not defined)
+3: Useful if only one or just a few language files were modified. This is faster than reloading the entire database.
+It does not matter if it is called from the gamemode or a filterscript.
+So you could create an admin command that calls this function, or  `OnRconCommand()` (so you could reload it without having to go in-game, assuming (remote) RCON is enabled or you have console access).
 
-The reason why this function uses `file` and `subDir` instead of `table` (eg `foo` or `global-foo`) is because all (or no) file extensions are allowed.  
+The reason why this function uses `file` and `subDir` instead of `table` (eg `foo` or `global-foo`) is because all (or no) file extensions are allowed.
 CBA to scan directories and check if there is a non-exact match (since files would have to be scanned twice then, since this function calls an internal function already used by `LanguageDB_Build()`).
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [LanguageDB_Build()](#languagedb_build)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### Language_Get
-`string:Language_Get(const string:languageCode[], const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
-Retrieves a language string. Optionally formats retrieved string (only when using YSI)
+`string:Language_Get(const string:languageCode[], const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
+Retrieves a language string. Optionally formats retrieved string
 
-**Parameters**  
-`const string:languageCode[]`: Language to get content from, using the language code  
-`const string:table[]`: Table to get the content from  
-`const string:identifier[]`: String to retrieve from given language code and table  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`const string:languageCode[]`: Language to get content from, using the language code
+`const string:table[]`: Table to get the content from
+`const string:identifier[]`: String to retrieve from given language code and table
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 (string) Retrieved (and formatted) string
 
-**Notes**  
+**Notes**
 <!> If given language, table or identifier doesn't exist, it returns `[languageCode]table:identifier` (eg. `[en]global:SOME_IDENTIFIER`)
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Player_Language_Get()](#player_language_get)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### Player_GetLanguage
-`string:Player_GetLanguage(const playerid)`  
+`string:Player_GetLanguage(const playerid)`
 Returns the language of a player
 
-**Parameters**  
+**Parameters**
 `const playerid`: Player to get language from
 
-**Returns**  
+**Returns**
 (string) Language code the player is using
 
-**Notes**  
+**Notes**
 If no language was selected for the player, or if the player doesn't exist, it returns the server default language
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Player_SetLanguage()](#player_setlanguage)
 * [Player_SelectLanguage()](#player_selectlanguage)
-* [Player_HasSelectedLanguage()](#player_hasselectedlanguage)  
+* [Player_HasSelectedLanguage()](#player_hasselectedlanguage)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### Player_SetLanguage
-`bool:Player_SetLanguage(const playerid, const string:language[])`  
+`bool:Player_SetLanguage(const playerid, const string:language[])`
 Sets the language for a player
 
-**Parameters**  
-`const playerid`: Player to set the language for  
+**Parameters**
+`const playerid`: Player to set the language for
 `const string:language[]`: Language to set, using language code
 
-**Returns**  
+**Returns**
 (bool) **true**: Language was set for the player. **false**: Language unchanged: Player isn't connected or given language doesn't exist
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Player_GetLanguage()](#player_getlanguage)
 * [Player_SelectLanguage()](#player_selectlanguage)
-* [Player_HasSelectedLanguage()](#player_hasselectedlanguage)  
+* [Player_HasSelectedLanguage()](#player_hasselectedlanguage)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### Player_SelectLanguage
-`void:Player_SelectLanguage(const playerid)`  
+`void:Player_SelectLanguage(const playerid)`
 Shows a dialog to the player displaying all available languages, allowing them to change their language to one of them.
 
-**Parameters**  
+**Parameters**
 `const playerid`: Player to show the dialog to
 
-**Returns**  
+**Returns**
 Nothing
 
-**Notes**  
-If only one language is available, no dialog is displayed and their language is set to that language.  
+**Notes**
+If only one language is available, no dialog is displayed and their language is set to that language.
 After changing their language, `OnPlayerSelectLanguage()` is called.
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [OnPlayerSelectLanguage()](#onplayerselectlanguage)
 * [Player_GetLanguage()](#player_getlanguage)
 * [Player_SetLanguage()](#player_setlanguage)
@@ -500,19 +560,19 @@ After changing their language, `OnPlayerSelectLanguage()` is called.
 
 ---
 #### Player_HasSelectedLanguage
-`bool:Player_HasSelectedLanguage(const playerid)`  
-Checks if a player has a language selected.  
+`bool:Player_HasSelectedLanguage(const playerid)`
+Checks if a player has a language selected.
 
-**Parameters**  
-`const playerid`: Player to check  
+**Parameters**
+`const playerid`: Player to check
 
-**Returns**  
-(bool) **true**: Player selected a language | **false**: Player did not select a language, default language is currently shown to the player  
+**Returns**
+(bool) **true**: Player selected a language | **false**: Player did not select a language, default language is currently shown to the player
 
-**Notes**  
-None  
+**Notes**
+None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [OnPlayerSelectLanguage()](#onplayerselectlanguage)
 * [Player_GetLanguage()](#player_getlanguage)
 * [Player_SetLanguage()](#player_setlanguage)
@@ -523,21 +583,21 @@ None
 ---
 #### Player_Language_Get
 `string:Player_Language_Get(const playerid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
-Retrieves a language string for a player. Optionally formats retrieved string (only when using YSI)
+Retrieves a language string for a player. Optionally formats retrieved string
 
-**Parameters**  
-`const playerid`: Player to fetch the string for (or rather, fetch a string, using the selected language of given player)  
-`const string:table[]`: Table to get the content from  
-`const string:identifier[]`: String to retrieve from given language code and table  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`const playerid`: Player to fetch the string for (or rather, fetch a string, using the selected language of given player)
+`const string:table[]`: Table to get the content from
+`const string:identifier[]`: String to retrieve from given language code and table
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 (string) Retrieved (and formatted) string
 
-**Notes**  
+**Notes**
 <!> If the player's language doesn't exist or if given table or identifier doesn't exist, it returns `[languageCode]table:identifier` (eg. `[en]global:SOME_IDENTIFIER`)
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [Language_Get()](#language_get)
 * [Player_GetLanguage()](#player_getlanguage)
 
@@ -545,116 +605,114 @@ Retrieves a language string for a player. Optionally formats retrieved string (o
 
 ---
 #### SendClientLanguageMessage
-`bool:SendClientLanguageMessage(const playerid, const colour, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`bool:SendClientLanguageMessage(const playerid, const colour, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Sends a client message to the player using the language system
 
-**Parameters**  
-`const playerid`: Player to send the message to  
-`const colour`: Colour of the message  
-`const string:table[]`: Language table to get content from  
-`const string:identifier[]`:  String to retrieve from the language table  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`const playerid`: Player to send the message to
+`const colour`: Colour of the message
+`const string:table[]`: Language table to get content from
+`const string:identifier[]`:  String to retrieve from the language table
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 (bool) Output of SendClientMessage(), thus **true**: Message was sent or **false**: Player isn't connected
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [SendClientLanguageMessageToAll()](#sendclientlanguagemessagetoall)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### SendClientLanguageMessageToAll
-`bool:SendClientLanguageMessageToAll(const colour, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`bool:SendClientLanguageMessageToAll(const colour, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Sends a client message to all players, displaying the message in the selected language of each individual player
 
-**Parameters**  
-`const colour`: Colour of the message  
-`const string:table[]`: Language table to get content from  
-`const string:identifier[]`:  String to retrieve from the language table  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`const colour`: Colour of the message
+`const string:table[]`: Language table to get content from
+`const string:identifier[]`:  String to retrieve from the language table
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 (bool) Output of SendClientMessage(), thus always returns true
 
-**Notes**  
-<!> If you're not using YSI, and the to-be-sent text has format specifiers, you can't use this function. Instead you'll have to loop through each player and use `SendClientLanguageMessage()` for each player.
+**Notes**
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [SendClientLanguageMessage()](#sendclientlanguagemessage)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### GameLanguageTextForPlayer
-`bool:GameLanguageTextForPlayer(const playerid, const string:table[], const string:identifier[], const time, const style, OPEN_MP_TAGS:...)`  
+`bool:GameLanguageTextForPlayer(const playerid, const string:table[], const string:identifier[], const time, const style, OPEN_MP_TAGS:...)`
 Sends a game text to a player using the language system
 
-**Parameters**  
-`const playerid`: Player to show the gametext for  
-`const string:table[]`: Language table to get content from  
-`const string:identifier[]`: String to retrieve from the language table  
-`const time`: The duration of the text being shown in milliseconds  
-`const style`: The style of text to be displayed  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`const playerid`: Player to show the gametext for
+`const string:table[]`: Language table to get content from
+`const string:identifier[]`: String to retrieve from the language table
+`const time`: The duration of the text being shown in milliseconds
+`const style`: The style of text to be displayed
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
-(bool) Output of GameTextForPlayer(), **true**: Function executed or **false**: Player not connected or gametext string is null  
+**Returns**
+(bool) Output of GameTextForPlayer(), **true**: Function executed or **false**: Player not connected or gametext string is null
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [GameLanguageTextForAll()](#gamelanguagetextforall)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### GameLanguageTextForAll
-`void:GameLanguageTextForAll(const string:table[], const string:identifier[], const time, const style, OPEN_MP_TAGS:...)`  
+`void:GameLanguageTextForAll(const string:table[], const string:identifier[], const time, const style, OPEN_MP_TAGS:...)`
 Sends a game text to all players using the language system, displaying the gametext in the selected language of each individual player
 
-**Parameters**  
-`const string:table[]`: Language table to get content from  
-`const string:identifier[]`: String to retrieve from the language table  
-`const time`: The duration of the text being shown in milliseconds  
-`const style`: The style of text to be displayed  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`const string:table[]`: Language table to get content from
+`const string:identifier[]`: String to retrieve from the language table
+`const time`: The duration of the text being shown in milliseconds
+`const style`: The style of text to be displayed
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 Nothing
 
-**Notes**  
-<!> If you're not using YSI, and the to-be-sent text has format specifiers, you can't use this function. Instead you'll have to loop through each player and use `GameLanguageTextForPlayer()` for each player.
+**Notes**
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [GameLanguageTextForPlayer()](#gamelanguagetextforplayer)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### CreatePlayerLanguageTextDraw
-`PlayerText:CreatePlayerLanguageTextDraw(const playerid, Float:x, Float:y, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`PlayerText:CreatePlayerLanguageTextDraw(const playerid, Float:x, Float:y, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Creates a player-textdraw using the language system
 
-**Parameters**  
-`playerid`: Player to create the textdraw for  
-`Float:x`: X-coordinate  
-`Float:y`: Y-coordinate  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`playerid`: Player to create the textdraw for
+`Float:x`: X-coordinate
+`Float:y`: Y-coordinate
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 PlayerText:The ID of the created textdraw
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [PlayerTextDrawLanguageString()](#playertextdrawlanguagestring)
 * [TextDrawLanguageStringForPlayer()](#textdrawlanguagestringforplayer)
 
@@ -662,23 +720,23 @@ None
 
 ---
 #### PlayerTextDrawLanguageString
-`PlayerTextDrawLanguageString(const playerid, PlayerText:textid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`PlayerTextDrawLanguageString(const playerid, PlayerText:textid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Sets a player-textdraw string using the language system
 
-**Parameters**  
-`playerid`: Player who owns the textdraw  
-`textid`:  The PlayerTextDraw to set the string for  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`playerid`: Player who owns the textdraw
+`textid`:  The PlayerTextDraw to set the string for
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 Always returns 1
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [CreatePlayerLanguageTextDraw()](#createplayerlanguagetextdraw)
 * [TextDrawLanguageStringForPlayer()](#textdrawlanguagestringforplayer)
 
@@ -686,23 +744,23 @@ None
 
 ---
 #### TextDrawLanguageStringForPlayer
-`TextDrawLanguageStringForPlayer(const playerid, Text:textid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`TextDrawLanguageStringForPlayer(const playerid, Text:textid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Sets a textdraw string for a specific player using the language system
 
-**Parameters**  
-`playerid`: Player to show the textdraw to  
-`textid`: The TextDraw to set the string for  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used. Only works when using YSI
+**Parameters**
+`playerid`: Player to show the textdraw to
+`textid`: The TextDraw to set the string for
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`OPEN_MP_TAGS:...`: (optional) Used for formatting the string if format specifiers were used
 
-**Returns**  
+**Returns**
 Always returns 1
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [CreatePlayerLanguageTextDraw()](#createplayerlanguagetextdraw)
 * [PlayerTextDrawLanguageString()](#playertextdrawlanguagestring)
 
@@ -710,120 +768,124 @@ None
 
 ---
 #### SendPlayerLanguageMessageToAll
-`bool:SendPlayerLanguageMessageToAll(const senderid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`bool:SendPlayerLanguageMessageToAll(const senderid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Sends a message in the name of a player to all other players on the server using the language system
 
-**Parameters**  
-`senderid`: The ID of the sender. If invalid, the message will not be sent  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content <!>ONLY WHEN USING Y_VA(YSI)  
+**Parameters**
+`senderid`: The ID of the sender. If invalid, the message will not be sent
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content using PawnPlus argument forwarding
 
-**Returns**  
+**Returns**
 Always returns true
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [SendPlayerLanguageMessageToPlayer()](#sendplayerlanguagemessagetoplayer)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### SendPlayerLanguageMessageToPlayer
-`bool:SendPlayerLanguageMessageToPlayer(const playerid, const senderid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`bool:SendPlayerLanguageMessageToPlayer(const playerid, const senderid, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Sends a message in the name of a player to another player on the server using the language system
 
-**Parameters**  
-`playerid`: The ID of the player who will receive the message  
-`senderid`: The ID of the sender. If invalid, the message will not be sent  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content <!>ONLY WHEN USING Y_VA(YSI)  
+**Parameters**
+`playerid`: The ID of the player who will receive the message
+`senderid`: The ID of the sender. If invalid, the message will not be sent
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content using PawnPlus argument forwarding
 
-**Returns**  
+**Returns**
 Output of SendPlayerMessageToPlayer(), thus **true**: function executed successfully or **false**: Failed to execute (specified player does not exist)
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [SendPlayerLanguageMessageToAll()](#sendplayerlanguagemessagetoall)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### CreatePlayer3DLanguageTextLabel
-`PlayerText3D:CreatePlayer3DLanguageTextLabel(const playerid, const string:table[], const string:identifier[], const colour, const Float:x, const Float:y, const Float:z, const Float:drawDistance, const parentPlayerid = INVALID_PLAYER_ID, const parentVehicleid = INVALID_VEHICLE_ID, const bool:testLOS = false, OPEN_MP_TAGS:...)`  
+`PlayerText3D:CreatePlayer3DLanguageTextLabel(const playerid, const string:table[], const string:identifier[], const colour, const Float:x, const Float:y, const Float:z, const Float:drawDistance, const parentPlayerid = INVALID_PLAYER_ID, const parentVehicleid = INVALID_VEHICLE_ID, const bool:testLOS = false, OPEN_MP_TAGS:...)`
 Creates a 3D text label for a specific player using the language system
 
-**Parameters**  
-`playerid`: The ID of the player to create the 3D text label for  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`colour`: The text colour  
-`Float:x`: X coordinate (or offset if attached)  
-`Float:y`: Y coordinate (or offset if attached)  
-`Float:z`: Z coordinate (or offset if attached)  
-`Float:drawDistance`: The distance where you are able to see the 3D Text Label  
-`parentPlayerid`: (optional) The player you want to attach the 3D Text Label to (None (and default): INVALID_PLAYER_ID)  
-`parentVehicleid`: (optional) The vehicle you want to attach the 3D Text Label to (None (and default): INVALID_VEHICLE_ID)  
-`testLOS`: Test the line of sight (true) so this text can't be seen through walls - or not (false) (default: false)  
-`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content <!>ONLY WHEN USING Y_VA(YSI)
+**Parameters**
+`playerid`: The ID of the player to create the 3D text label for
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`colour`: The text colour
+`Float:x`: X coordinate (or offset if attached)
+`Float:y`: Y coordinate (or offset if attached)
+`Float:z`: Z coordinate (or offset if attached)
+`Float:drawDistance`: The distance where you are able to see the 3D Text Label
+`parentPlayerid`: (optional) The player you want to attach the 3D Text Label to (None (and default): INVALID_PLAYER_ID)
+`parentVehicleid`: (optional) The vehicle you want to attach the 3D Text Label to (None (and default): INVALID_VEHICLE_ID)
+`testLOS`: Test the line of sight (true) so this text can't be seen through walls - or not (false) (default: false)
+`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content using PawnPlus argument forwarding
 
-**Returns**  
+**Returns**
 Output of CreatePlayer3DTextLabel(): ID of the newly created label or INVALID_3DTEXT_ID if the Player 3D Text Label limit (MAX_3DTEXT_PLAYER) was reached
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [UpdatePlayer3DLanguageTextLabelText()](#updateplayer3dlanguagetextlabeltext)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### UpdatePlayer3DLanguageTextLabelText
-`bool:UpdatePlayer3DLanguageTextLabelText(const playerid, const PlayerText3D:textid, const colour, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`  
+`bool:UpdatePlayer3DLanguageTextLabelText(const playerid, const PlayerText3D:textid, const colour, const string:table[], const string:identifier[], OPEN_MP_TAGS:...)`
 Updates a player 3D Text Label's text and colour using the language system
 
-**Parameters**  
-`playerid`: The ID of the player for which the 3D Text Label was created  
-`textid`: The 3D Text Label you want to update  
-`colour`: The color the 3D Text Label should have from now on  
-`table[]`: Table to get the content from  
-`identifier[]`: Identifier from given table to retrieve  
-`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content <!>ONLY WHEN USING Y_VA(YSI)  
+**Parameters**
+`playerid`: The ID of the player for which the 3D Text Label was created
+`textid`: The 3D Text Label you want to update
+`colour`: The color the 3D Text Label should have from now on
+`table[]`: Table to get the content from
+`identifier[]`: Identifier from given table to retrieve
+`OPEN_MP_TAGS:...` (optional) Used for formatting format specifiers used in retrieved content using PawnPlus argument forwarding
 
-**Returns**  
+**Returns**
 Always returns true
 
-**Notes**  
+**Notes**
 None
 
-**Related functions/callbacks**  
+**Related functions/callbacks**
 * [CreatePlayer3DLanguageTextLabel()](#createplayer3dlanguagetextlabel)
 
 [To index](#functions-and-callbacks)
 
 ---
 #### OnPlayerSelectLanguage
-`OnPlayerSelectLanguage(playerid, response)`  
+`OnPlayerSelectLanguage(playerid, response)`
 Callback that is called after a player changed their language from the dialog
 
-**Parameters**  
-`playerid`: Player that changed their language  
-`response`: Is either `0`: Player did not select a language, `1`: Player did select a language or `-1`: No dialog was shown, only one language available  
+**Parameters**
+`playerid`: Player that changed their language
+`response`: Is either `0`: Player did not select a language, `1`: Player did select a language or `-1`: No dialog was shown, only one language available
 
-**Notes**  
-1: <!> Only called when using `Player_SelectLanguage()`, not when `Player_SetLanguage()` was used.  
-2: Using `if (response)` is sufficient if you just want to check if player language was set, since this will return true both for `1` and `-1`.  
+**Notes**
+1: <!> Only called when using `Player_SelectLanguage()`, not when `Player_SetLanguage()` was used.
+2: Using `if (response)` is sufficient if you just want to check if player language was set, since this will return true both for `1` and `-1`.
 
-**Related functions/callbacks**  
-* [Player_SelectLanguage()](#player_selectlanguage)  
+**Related functions/callbacks**
+* [Player_SelectLanguage()](#player_selectlanguage)
 * [Player_HasSelectedLanguage()](#player_hasselectedlanguage)
 
 [To index](#functions-and-callbacks)
 ---
 [To main index](#index)
+
+## AI disclosure
+
+AI tools assisted with parts of the code and documentation. Review the source and test the include on your own local server before using it in production.
