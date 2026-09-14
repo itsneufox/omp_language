@@ -1,0 +1,3 @@
+WELCOME Welcome, {0:S}!
+TOTAL Total: {$env["amount"]:d}
+# end

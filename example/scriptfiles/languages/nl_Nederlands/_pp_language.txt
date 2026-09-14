@@ -1,4 +1,4 @@
-# Language file used by the omp_language include, used for showing the language selection dialog
+# Language file used by the pp_language include, used for showing the language selection dialog
 
 DIALOG_TITLE            {WHITE}Selecteer een taal
 DIALOG_BUTTON_SELECT    {WHITE}Selecteer

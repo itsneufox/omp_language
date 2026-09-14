@@ -3,4 +3,4 @@ COUNT_APPEND_SECOND	e
 COUNT_APPEND_THIRD	e
 COUNT_APPEND_OTHER	e
 
-INFO_OMP_LANGUAGE	Server gebruikt omp_language
+INFO_PP_LANGUAGE	Server gebruikt pp_language
