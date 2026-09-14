@@ -64,11 +64,22 @@ hook UniqueHookTest(value)
     return 0;
 }
 
+#if !defined PP_VA_DISABLE_SPREAD
+stock string:SpreadTranslation(const language[], const table[], const identifier[], OPEN_MP_TAGS:...)
+{
+    return Language_Get(language, table, identifier, ___(3));
+}
+#endif
+
 main() {}
 
 public OnGameModeInit()
 {
     Check(pawn_call_public("UniqueHookTest", "i", 7) == 31 && unique_hook_sequence == 14, "automatic unique names preserve mixed hook order and stopping");
+    #if !defined PP_VA_DISABLE_SPREAD
+        Check(!strcmp(SpreadTranslation("en", "tests", "FORMAT", "Alice", 42, 1.25), "Alice has 42 at 1.25%."), "spread into array-returning language API");
+        Check(!strcmp(SpreadTranslation("en", "tests", "PLAIN"), "100% ready"), "empty spread into language API");
+    #endif
     CheckFormat("hello", "hello");
     CheckFormat("name=Alice n=42 f=1.25 %", "name=%s n=%d f=%.2f %%", "Alice", 42, 1.25);
     Check(!strcmp(ArrayFormat("%s:%d", "nested", 7), "nested:7"), "array-return variadic formatting");

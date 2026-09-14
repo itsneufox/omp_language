@@ -230,7 +230,8 @@ Hell no. YSI is so bad your house will explode even if you download it.¹
 ¹ A joke. This library uses PawnPlus and standalone y_unique; the full YSI framework is incompatible!
 
 The variadic helpers are provided by [pp-va](https://github.com/itsneufox/pp-va).
-Install `includes/pp-va.inc` from that repository into your compiler include path. Its APIs are `PP_Format` and `PP_GetArgumentReferences`.
+Its formatting APIs include `PP_Format` and `PP_GetArgumentReferences`. 
+Direct argument spreading with `___(n)` is enabled by default. Define `PP_VA_DISABLE_SPREAD` before including pp_language to disable it;
 
 ## PawnPlus APIs
 
