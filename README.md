@@ -896,6 +896,15 @@ Callback that is called after a player changed their language from the dialog
 ---
 [To main index](#index)
 
+## Tests
+
+```bash
+python3 tests/run.py --server-root /path/to/openmp-server
+```
+
+The test runner accepts `--include-dir /path/to/includes` for dependencies installed
+outside the compiler's default include directory. This option can be repeated.
+
 ## AI disclosure
 
 AI tools assisted with parts of the code and documentation. Review the source and test the include on your own local server before using it in production.
